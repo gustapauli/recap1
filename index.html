@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Recap — Bloco 1 · Da caverna ao mundo moderno</title>
+<style>
+  :root {
+    --bg: #F4EFE6;
+    --bg-deep: #1A1814;
+    --ink: #1A1814;
+    --ink-soft: #4A4640;
+    --paper: #FBF7EF;
+    --accent: #B8862F;
+    --accent-soft: #E8C77A;
+    --line: rgba(26,24,20,0.12);
+    --correct: #2E7D4F;
+    --wrong: #B5342B;
+    --serif: Georgia, 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .app {
+    position: fixed;
+    inset: 0;
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .progress {
+    position: absolute;
+    top: 10px; left: 12px; right: 12px;
+    height: 18px;
+    display: flex;
+    gap: 2px;
+    z-index: 50;
+    align-items: center;
+    cursor: pointer;
+  }
+  .seg {
+    flex: 1;
+    height: 3px;
+    background: rgba(26,24,20,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    transition: height 0.2s ease;
+  }
+  .seg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+  .seg.done::after { transform: scaleX(1); }
+  .seg.current::after { transform: scaleX(1); }
+  .seg.current { height: 4px; }
+
+  .header {
+    position: absolute;
+    top: 34px; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 40;
+    pointer-events: none;
+  }
+  .header span {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  .slides { position: absolute; inset: 0; }
+  .slide {
+    position: absolute;
+    inset: 0;
+    padding: 80px 28px 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    opacity: 0;
+    transform: translateX(40px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+    overflow-y: auto;
+  }
+  .slide.active {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+  .slide.prev { transform: translateX(-40px); }
+
+  .eyebrow {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(28px, 8vw, 38px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+  h1 em, h2 em {
+    font-style: italic;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(24px, 7vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin-bottom: 14px;
+  }
+  h3 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 20px;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+  }
+  p {
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 400;
+  }
+  p + p { margin-top: 14px; }
+  .big {
+    font-family: var(--serif);
+    font-size: clamp(22px, 6.5vw, 28px);
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 20px;
+    line-height: 1.4;
+    color: var(--ink);
+    border-left: 2px solid var(--accent);
+    padding-left: 18px;
+    margin: 8px 0;
+  }
+  .number {
+    font-family: var(--serif);
+    font-size: 88px;
+    font-weight: 800;
+    line-height: 0.9;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+  }
+  .label {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .slide.active > * {
+    animation: fadeUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards;
+  }
+  .slide.active > *:nth-child(1) { animation-delay: 0.05s; }
+  .slide.active > *:nth-child(2) { animation-delay: 0.16s; }
+  .slide.active > *:nth-child(3) { animation-delay: 0.27s; }
+  .slide.active > *:nth-child(4) { animation-delay: 0.38s; }
+  .slide.active > *:nth-child(5) { animation-delay: 0.49s; }
+  .slide.active > *:nth-child(6) { animation-delay: 0.60s; }
+  .slide.active > *:nth-child(7) { animation-delay: 0.71s; }
+  .slide.active > *:nth-child(8) { animation-delay: 0.82s; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tap-zone {
+    position: absolute;
+    top: 60px; bottom: 0;
+    width: 35%;
+    z-index: 30;
+    cursor: pointer;
+  }
+  .tap-zone.left { left: 0; }
+  .tap-zone.right { right: 0; }
+  .footer-hint {
+    position: absolute;
+    bottom: 18px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    opacity: 0.6;
+    z-index: 20;
+    pointer-events: none;
+  }
+  .footer-hint .arrow {
+    display: inline-block;
+    animation: nudge 2s ease-in-out infinite;
+  }
+  @keyframes nudge {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); }
+  }
+  .illu {
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto 18px;
+    display: block;
+  }
+  .illu.sm { max-width: 180px; }
+  .illu.lg { max-width: 320px; }
+  .illu svg { width: 100%; height: auto; display: block; }
+  .draw path, .draw line, .draw circle, .draw rect, .draw polygon, .draw polyline {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: draw 1.6s 0.3s cubic-bezier(0.5, 0, 0.2, 1) forwards;
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .cover {
+    background: var(--bg-deep);
+    color: var(--paper);
+  }
+  .cover h1 { color: var(--paper); }
+  .cover .eyebrow { color: var(--accent-soft); }
+  .cover p { color: rgba(251,247,239,0.7); }
+  .cover .footer-hint { color: rgba(251,247,239,0.5); }
+  .part-cover {
+    background: var(--bg-deep);
+    color: var(--paper);
+  }
+  .part-cover h2 { color: var(--paper); }
+  .part-cover .eyebrow { color: var(--accent-soft); }
+  .part-cover p { color: rgba(251,247,239,0.7); }
+  .part-cover .number { color: var(--accent-soft); }
+  .quiz-intro { text-align: center; }
+  .quiz-icon {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--paper);
+    animation: popIn 0.6s 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+  @keyframes popIn {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .question-num {
+    font-family: var(--sans);
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .question {
+    font-family: var(--serif);
+    font-size: 20px;
+    line-height: 1.3;
+    font-weight: 600;
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: var(--sans);
+    font-size: 14.5px;
+    line-height: 1.4;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .option:active { transform: scale(0.98); }
+  .option .letter {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 1px;
+    transition: all 0.2s ease;
+  }
+  .option.correct {
+    background: rgba(46, 125, 79, 0.08);
+    border-color: var(--correct);
+    color: var(--correct);
+  }
+  .option.correct .letter {
+    background: var(--correct);
+    color: white;
+    border-color: var(--correct);
+  }
+  .option.wrong {
+    background: rgba(181, 52, 43, 0.06);
+    border-color: var(--wrong);
+    color: var(--wrong);
+  }
+  .option.wrong .letter {
+    background: var(--wrong);
+    color: white;
+    border-color: var(--wrong);
+  }
+  .option.disabled { pointer-events: none; opacity: 0.55; }
+  .feedback {
+    margin-top: 16px;
+    padding: 14px;
+    border-radius: 12px;
+    font-family: var(--sans);
+    font-size: 13.5px;
+    line-height: 1.5;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  .feedback.show {
+    opacity: 1;
+    max-height: 400px;
+  }
+  .feedback.right {
+    background: rgba(46, 125, 79, 0.08);
+    color: var(--correct);
+    border: 1px solid rgba(46, 125, 79, 0.2);
+  }
+  .feedback.miss {
+    background: rgba(181, 52, 43, 0.06);
+    color: var(--ink);
+    border: 1px solid rgba(181, 52, 43, 0.2);
+  }
+  .feedback strong { font-weight: 700; }
+  .feedback .head {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 15px;
+    margin-bottom: 4px;
+    display: block;
+    font-weight: 600;
+  }
+  .end {
+    background: var(--bg-deep);
+    color: var(--paper);
+    text-align: center;
+  }
+  .end h2 { color: var(--paper); }
+  .end p { color: rgba(251,247,239,0.7); }
+  .end .score {
+    font-family: var(--serif);
+    font-size: 72px;
+    font-weight: 800;
+    color: var(--accent-soft);
+    line-height: 1;
+    margin: 20px 0;
+  }
+  .restart {
+    margin-top: 28px;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 100px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .restart:active { transform: scale(0.96); }
+  .slide::-webkit-scrollbar { display: none; }
+  .slide { scrollbar-width: none; }
+  .card-soft {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .stamp {
+    display: inline-block;
+    background: var(--accent);
+    color: var(--paper);
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+  }
+  .stamp.dark {
+    background: var(--bg-deep);
+    color: var(--accent-soft);
+  }
+  .pillar-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .pillar {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+  }
+  .pillar svg { width: 36px; height: 36px; margin: 0 auto 6px; display: block; }
+  .pillar .name {
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .gear-list {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 14px;
+  }
+  .gear {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 14px;
+    background: var(--paper);
+    border-radius: 12px;
+    border-left: 3px solid var(--accent);
+  }
+  .gear svg { width: 32px; height: 32px; flex-shrink: 0; }
+  .gear .gname { font-family: var(--serif); font-size: 16px; font-weight: 600; }
+  .gear .gdesc { font-size: 13px; color: var(--ink-soft); }
+  .timeline {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 14px;
+  }
+  .tl-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px;
+    background: var(--paper);
+    border-radius: 10px;
+  }
+  .tl-year {
+    flex-shrink: 0;
+    font-family: var(--serif);
+    font-weight: 800;
+    color: var(--accent);
+    font-size: 14px;
+    min-width: 56px;
+  }
+  .tl-text { font-size: 14px; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="progress" id="progress"></div>
+  <div class="header">
+    <span>Recap · Bloco 1</span>
+    <span id="counter">1 / 1</span>
+  </div>
+
+  <div class="slides" id="slides">
+
+    <!-- 1 — CAPA -->
+    <section class="slide cover active">
+      <div class="eyebrow">História · Recap</div>
+      <h1>Da caverna ao <em>mundo moderno</em>.</h1>
+      <p style="margin-top: 16px;">Tudo o que a gente construiu nas Aulas 1 a 13.</p>
+      <div class="illu" style="margin-top: 32px;">
+        <svg viewBox="0 0 280 120" class="draw" fill="none" stroke="#E8C77A" stroke-width="1.5">
+          <!-- caverna -->
+          <path d="M10 100 Q15 70 35 70 Q55 70 60 100 Z"/>
+          <circle cx="35" cy="88" r="2" fill="#E8C77A"/>
+          <!-- seta -->
+          <path d="M70 90 L100 90" stroke-dasharray="3 3"/>
+          <!-- pirâmide -->
+          <path d="M105 100 L125 65 L145 100 Z"/>
+          <!-- seta -->
+          <path d="M155 90 L180 90" stroke-dasharray="3 3"/>
+          <!-- catedral -->
+          <path d="M185 100 L185 70 L200 55 L215 70 L215 100 Z"/>
+          <path d="M198 100 L198 80 L202 80 L202 100"/>
+          <!-- seta -->
+          <path d="M225 90 L250 90" stroke-dasharray="3 3"/>
+          <!-- chaminé fábrica -->
+          <rect x="255" y="75" width="8" height="25"/>
+          <rect x="265" y="65" width="10" height="35"/>
+          <path d="M259 75 Q256 68 260 62" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+      <p style="margin-top: 24px; font-style: italic; font-family: var(--serif); font-size: 18px;">Treze aulas. Hoje, a gente conecta tudo.</p>
+      <div class="footer-hint">toque na lateral pra avançar <span class="arrow">→</span></div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide">
+      <p class="big">Oi, Lorena.</p>
+      <p style="margin-top: 16px;">Hoje a gente não tem aula nova.</p>
+      <p>Hoje a gente tem uma coisa diferente, e talvez ainda mais importante.</p>
+      <p style="margin-top: 12px;">Hoje a gente vai parar, respirar, e olhar pra trás.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide">
+      <div class="eyebrow">Treze passos</div>
+      <p>É bastante coisa.</p>
+      <p style="margin-top: 12px;">Você atravessou da pré-história, dos caçadores andando pela savana africana…</p>
+      <p style="margin-top: 8px;">…até as fábricas fumegantes de <strong>Manchester</strong>, com crianças trabalhando 16 horas por dia.</p>
+      <div class="illu sm" style="margin: 20px auto;">
+        <svg viewBox="0 0 160 60" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <circle cx="20" cy="30" r="4"/>
+          <circle cx="40" cy="30" r="4"/>
+          <circle cx="60" cy="30" r="4"/>
+          <circle cx="80" cy="30" r="4"/>
+          <circle cx="100" cy="30" r="4"/>
+          <circle cx="120" cy="30" r="4"/>
+          <circle cx="140" cy="30" r="4"/>
+          <path d="M24 30 L36 30 M44 30 L56 30 M64 30 L76 30 M84 30 L96 30 M104 30 L116 30 M124 30 L136 30"/>
+        </svg>
+      </div>
+      <p>Treze passos, cada um em cima do anterior. Como tijolo numa parede.</p>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide">
+      <p class="big">E aqui é onde a maioria perde o jogo.</p>
+      <p style="margin-top: 14px;">Estuda, estuda, estuda…</p>
+      <p>Mas nunca para pra <strong>conectar</strong>.</p>
+      <p style="margin-top: 12px;">E sem conectar, conhecimento vira pilha de informação solta. Evapora em duas semanas.</p>
+      <p class="big" style="margin-top: 16px; color: var(--accent);">Hoje, a gente conecta.</p>
+    </section>
+
+    <!-- 5 — PARTE 1 capa -->
+    <section class="slide part-cover">
+      <div class="number">01</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 1</div>
+      <h2>A fundação.</h2>
+      <p style="margin-top: 14px;">Por que tudo isso importa.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide">
+      <div class="eyebrow">Aula 1 · a tese</div>
+      <p class="quote">A coisa mais simples do seu dia — abrir um aplicativo — é resultado direto de história, política e sociedade.</p>
+      <p style="margin-top: 14px;">Tudo junto, ao mesmo tempo, agindo sobre você.</p>
+      <p class="big" style="margin-top: 10px;">E você nem percebe.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <p>Tudo que veio depois — das cavernas a Manchester — foi pra te dar as <strong>ferramentas</strong> pra enxergar isso.</p>
+      <p class="big" style="margin-top: 14px;">Pra você sair de peão e virar <em>jogador</em>.</p>
+      <div class="illu sm" style="margin: 22px auto;">
+        <svg viewBox="0 0 120 60" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <circle cx="30" cy="30" r="10"/>
+          <path d="M50 30 L75 30" stroke-dasharray="3 3"/>
+          <path d="M68 25 L75 30 L68 35"/>
+          <path d="M85 18 L95 18 L100 28 L95 38 L85 38 L80 28 Z"/>
+          <circle cx="90" cy="28" r="3" fill="#B8862F"/>
+        </svg>
+      </div>
+    </section>
+
+    <!-- 8 — 4 engrenagens -->
+    <section class="slide">
+      <div class="eyebrow">Aula 2 · as 4 engrenagens</div>
+      <p>Em <strong>toda</strong> sociedade humana. Da tribo de 50 ao Brasil de 200 milhões.</p>
+      <div class="gear-list">
+        <div class="gear">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <circle cx="16" cy="16" r="6"/>
+            <path d="M16 4 L16 8 M16 24 L16 28 M4 16 L8 16 M24 16 L28 16 M7.5 7.5 L10 10 M22 22 L24.5 24.5 M7.5 24.5 L10 22 M22 10 L24.5 7.5"/>
+          </svg>
+          <div>
+            <div class="gname">Poder</div>
+            <div class="gdesc">Capacidade de fazer alguém fazer alguma coisa.</div>
+          </div>
+        </div>
+        <div class="gear">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <rect x="5" y="12" width="22" height="16"/>
+            <path d="M5 12 L16 4 L27 12"/>
+            <rect x="14" y="20" width="4" height="8"/>
+          </svg>
+          <div>
+            <div class="gname">Governo & Estado</div>
+            <div class="gdesc">Estado = a empresa. Governo = o gerente do mês.</div>
+          </div>
+        </div>
+        <div class="gear">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <circle cx="16" cy="16" r="10"/>
+            <path d="M16 8 L16 24 M12 12 L20 12 M12 16 L20 16 M12 20 L20 20"/>
+          </svg>
+          <div>
+            <div class="gname">Dinheiro</div>
+            <div class="gdesc">Magia coletiva. Vale porque todos acreditam.</div>
+          </div>
+        </div>
+        <div class="gear">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <path d="M8 26 L8 14 L12 10 L20 10 L24 14 L24 26 Z"/>
+            <path d="M14 26 L14 18 L18 18 L18 26"/>
+          </svg>
+          <div>
+            <div class="gname">Trabalho</div>
+            <div class="gdesc">A forma como organiza define o tipo de sociedade.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <p class="quote">Capitalismo, socialismo, feudalismo, escravidão. Todas, no fundo, formas diferentes de organizar o trabalho.</p>
+      <p style="margin-top: 16px;">Guarda essas quatro engrenagens.</p>
+      <p class="big" style="margin-top: 10px;">Elas vão estar girando em cada aula que veio depois.</p>
+    </section>
+
+    <!-- 10 — PARTE 2 -->
+    <section class="slide part-cover">
+      <div class="number">02</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 2 · Aula 3</div>
+      <h2>Como o ser humano saiu da caverna…</h2>
+      <p style="margin-top: 10px;">…e inventou a desigualdade.</p>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide">
+      <p>Trezentos mil anos atrás, na África, nasceu o <strong>Homo sapiens</strong>.</p>
+      <div class="illu sm" style="margin: 18px auto;">
+        <svg viewBox="0 0 120 80" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <circle cx="60" cy="22" r="10"/>
+          <path d="M60 32 L60 55"/>
+          <path d="M60 38 L48 50 M60 38 L72 50"/>
+          <path d="M60 55 L52 75 M60 55 L68 75"/>
+          <path d="M75 45 L90 35" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+      <p>Por <strong>96% da nossa história</strong>, vivemos de um jeito só.</p>
+      <p style="margin-top: 8px;">Caçando. Coletando. Andando.</p>
+      <p style="margin-top: 8px; color: var(--ink-soft); font-style: italic;">Sem dono de nada. Sem rei. Sem rico, sem pobre.</p>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide">
+      <div class="eyebrow">Há 12 mil anos · Crescente Fértil</div>
+      <p>Turquia, Iraque, Síria.</p>
+      <p style="margin-top: 12px;">Alguém — provavelmente uma mulher — percebeu uma coisa simples.</p>
+      <div class="illu sm" style="margin: 20px auto;">
+        <svg viewBox="0 0 120 80" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <path d="M20 70 L100 70"/>
+          <circle cx="40" cy="65" r="2" fill="#B8862F"/>
+          <path d="M75 70 L75 50 M70 55 L75 50 L80 55 M68 45 L75 40 L82 45"/>
+          <path d="M45 70 Q50 60 60 65" stroke-dasharray="2 2"/>
+        </svg>
+      </div>
+      <p>Joga semente no chão. Volta semanas depois. <strong>Tem planta nova ali.</strong></p>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide">
+      <p class="big">A maior virada da história humana.</p>
+      <h2 style="margin-top: 14px; color: var(--accent);"><em>Revolução Agrícola.</em></h2>
+      <p style="margin-top: 18px;">A partir dali, tudo mudou.</p>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide">
+      <div class="eyebrow">Surgiu</div>
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px;">Vilarejo.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px;">Profissão.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px;"><strong>Propriedade</strong> ("aquela terra é minha").</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px;"><strong>Desigualdade</strong> ("alguns têm mais").</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px;">Lei. Governo.</div>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide">
+      <div class="eyebrow">A lição dura</div>
+      <p class="quote">Quase nada na história é só bom ou só ruim. Quase tudo é as duas coisas ao mesmo tempo.</p>
+      <p style="margin-top: 14px;">O caçador-coletor trabalhava <strong>4, 5 horas</strong> por dia.</p>
+      <p>O agricultor, <strong>de sol a sol</strong>.</p>
+      <p style="margin-top: 12px; color: var(--ink-soft); font-style: italic;">Quem te disser que existe resposta simples na história, tá te enganando.</p>
+    </section>
+
+    <!-- 16 — PARTE 3 -->
+    <section class="slide part-cover">
+      <div class="number">03</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 3 · Aula 4</div>
+      <h2>A fórmula do <em>controle</em>.</h2>
+      <p style="margin-top: 10px;">Como vilarejos viraram impérios.</p>
+    </section>
+
+    <!-- 17 — 3 pilares -->
+    <section class="slide">
+      <h2>Três invenções.</h2>
+      <p>5 mil anos atrás. E continuam funcionando hoje.</p>
+      <div class="pillar-grid">
+        <div class="pillar">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <rect x="6" y="5" width="24" height="26" rx="2"/>
+            <path d="M11 12 L25 12 M11 17 L25 17 M11 22 L20 22"/>
+          </svg>
+          <div class="name">Escrita</div>
+        </div>
+        <div class="pillar">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <path d="M18 4 L26 12 L18 32 L10 12 Z"/>
+            <path d="M18 4 L18 32"/>
+          </svg>
+          <div class="name">Exército</div>
+        </div>
+        <div class="pillar">
+          <svg viewBox="0 0 36 36" fill="none" stroke="#B8862F" stroke-width="1.5">
+            <path d="M8 30 L28 30 L28 16 L18 8 L8 16 Z"/>
+            <path d="M16 30 L16 22 L20 22 L20 30"/>
+          </svg>
+          <div class="name">Religião</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 18 -->
+    <section class="slide">
+      <div class="eyebrow">A fórmula</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">Escrita</div>
+          <p style="font-family: var(--serif); font-size: 16px;">controle da <em>informação</em></p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">Exército</div>
+          <p style="font-family: var(--serif); font-size: 16px;">controle da <em>força</em></p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">Religião institucionalizada</div>
+          <p style="font-family: var(--serif); font-size: 16px;">controle das <em>mentes</em></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 19 — A fórmula hoje -->
+    <section class="slide">
+      <p class="big">E hoje?</p>
+      <p style="margin-top: 14px;">A fórmula não morreu. Só trocou de nome.</p>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="padding: 12px 14px; background: var(--paper); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: var(--serif); font-style: italic;">Escrita</span>
+          <span style="color: var(--accent);">→</span>
+          <span style="font-family: var(--serif); font-weight: 600; color: var(--accent);">Mídia & algoritmo</span>
+        </div>
+        <div style="padding: 12px 14px; background: var(--paper); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: var(--serif); font-style: italic;">Exército</span>
+          <span style="color: var(--accent);">→</span>
+          <span style="font-family: var(--serif); font-weight: 600; color: var(--accent);">Polícia, justiça</span>
+        </div>
+        <div style="padding: 12px 14px; background: var(--paper); border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-family: var(--serif); font-style: italic;">Religião</span>
+          <span style="color: var(--accent);">→</span>
+          <span style="font-family: var(--serif); font-weight: 600; color: var(--accent);">Ideologia</span>
+        </div>
+      </div>
+      <p class="big" style="margin-top: 16px;">Quem entende, enxerga o tabuleiro. Quem não entende, é peça nele.</p>
+    </section>
+
+    <!-- 20 — PARTE 4 -->
+    <section class="slide part-cover">
+      <div class="number">04</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 4 · Aulas 5 e 6</div>
+      <h2>Grécia e Roma.</h2>
+      <p style="margin-top: 10px;">As duas civilizações que vivem dentro de você.</p>
+    </section>
+
+    <!-- 21 — Grécia -->
+    <section class="slide">
+      <span class="stamp">Grécia</span>
+      <h2 style="margin-top: 14px;">Duas bombas.</h2>
+      <div class="illu" style="margin: 16px auto; max-width: 220px;">
+        <svg viewBox="0 0 220 100" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <!-- colunas -->
+          <path d="M30 85 L30 30 M50 85 L50 30 M170 85 L170 30 M190 85 L190 30"/>
+          <path d="M20 85 L200 85"/>
+          <path d="M20 30 L200 30"/>
+          <path d="M25 30 L25 20 L195 20 L195 30"/>
+          <!-- centro vazio -->
+          <path d="M70 60 L150 60" stroke-dasharray="3 3"/>
+        </svg>
+      </div>
+      <p><strong>1. Democracia.</strong> Atenas, século V a.C. <em>Demos + kratos</em>. Poder do povo.</p>
+      <p style="margin-top: 10px;"><strong>2. Filosofia.</strong> Sócrates, Platão, Aristóteles. O ser humano usando a própria razão.</p>
+    </section>
+
+    <!-- 22 -->
+    <section class="slide">
+      <p style="color: var(--ink-soft); font-size: 14px;">Detalhe importante:</p>
+      <p style="margin-top: 8px;">Democracia ateniense era <strong>bem restrita</strong>.</p>
+      <p>Mulher não votava. Escravo não votava. Estrangeiro não votava.</p>
+      <p style="margin-top: 8px;">Talvez 10% decidia pelos outros 90%.</p>
+      <p class="big" style="margin-top: 14px;">Mas a ideia ficou.</p>
+      <p style="margin-top: 8px;">Ressuscitou 2.500 anos depois.</p>
+      <p class="quote" style="margin-top: 14px;">Você votou na última eleição? Agradece um grego morto há 25 séculos.</p>
+    </section>
+
+    <!-- 23 — Roma -->
+    <section class="slide">
+      <span class="stamp">Roma</span>
+      <h2 style="margin-top: 14px;">Outras duas.</h2>
+      <div class="illu" style="margin: 16px auto; max-width: 220px;">
+        <svg viewBox="0 0 220 100" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <!-- arco -->
+          <path d="M30 85 L30 50 Q30 30 60 30 Q90 30 90 50 L90 85"/>
+          <path d="M130 85 L130 50 Q130 30 160 30 Q190 30 190 50 L190 85"/>
+          <path d="M20 85 L200 85"/>
+        </svg>
+      </div>
+      <p><strong>1. República.</strong> 509 a.C. Expulsaram o rei. Dois cônsules. Senado. Freios e contrapesos.</p>
+      <p style="margin-top: 10px;"><strong>2. Direito.</strong> Advogado, contrato, herança, propriedade.</p>
+    </section>
+
+    <!-- 24 -->
+    <section class="slide">
+      <p>Quando os EUA foram fundados em <strong>1776</strong>, copiaram Roma.</p>
+      <p>Quando o Brasil virou república em <strong>1889</strong>, copiou Roma.</p>
+      <p style="margin-top: 12px;">Quando você assina contrato de aluguel: <strong>direito romano</strong>.</p>
+      <p>Alguém morre e os filhos herdam: <strong>direito romano</strong>.</p>
+      <p class="big" style="margin-top: 14px;">2.500 anos depois. Ainda rodando.</p>
+    </section>
+
+    <!-- 25 — Por que impérios caem -->
+    <section class="slide">
+      <div class="eyebrow">Aula 6 · a lição mais dura</div>
+      <p class="big">Todo império cai. Sem exceção.</p>
+      <p style="margin-top: 12px;">E cai pelos mesmos 4 motivos. Sempre.</p>
+    </section>
+
+    <!-- 26 -->
+    <section class="slide">
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; gap: 12px; padding: 12px; background: var(--paper); border-radius: 10px;">
+          <span style="font-family: var(--serif); font-weight: 800; color: var(--accent); font-size: 22px;">01</span>
+          <div>
+            <div style="font-family: var(--serif); font-weight: 600;">Excesso de extensão</div>
+            <div style="font-size: 13px; color: var(--ink-soft);">Grande demais pra se sustentar.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 12px; background: var(--paper); border-radius: 10px;">
+          <span style="font-family: var(--serif); font-weight: 800; color: var(--accent); font-size: 22px;">02</span>
+          <div>
+            <div style="font-family: var(--serif); font-weight: 600;">Desigualdade interna</div>
+            <div style="font-size: 13px; color: var(--ink-soft);">1% acumula tudo, o resto come doação.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 12px; background: var(--paper); border-radius: 10px;">
+          <span style="font-family: var(--serif); font-weight: 800; color: var(--accent); font-size: 22px;">03</span>
+          <div>
+            <div style="font-family: var(--serif); font-weight: 600;">Corrupção das elites</div>
+            <div style="font-size: 13px; color: var(--ink-soft);">Perderam o propósito original.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px; padding: 12px; background: var(--paper); border-radius: 10px;">
+          <span style="font-family: var(--serif); font-weight: 800; color: var(--accent); font-size: 22px;">04</span>
+          <div>
+            <div style="font-family: var(--serif); font-weight: 600;">Pressão externa</div>
+            <div style="font-size: 13px; color: var(--ink-soft);">O gatilho. Mas a bomba já tava montada.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 27 -->
+    <section class="slide">
+      <p class="quote">Os impérios não são derrotados. Eles se suicidam. Lentamente, ao longo de gerações.</p>
+      <p style="margin-top: 14px;">Quando o inimigo finalmente chega, ele só <strong>assina a certidão de óbito</strong>.</p>
+      <p style="margin-top: 16px; font-style: italic; color: var(--ink-soft);">Pergunta provocadora: em qual estágio estão os EUA hoje?</p>
+    </section>
+
+    <!-- 28 — PARTE 5 -->
+    <section class="slide part-cover">
+      <div class="number">05</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 5 · Aula 7</div>
+      <h2>Mil anos que ninguém te contou direito.</h2>
+      <p style="margin-top: 10px;">A Idade Média não foi era das trevas.</p>
+    </section>
+
+    <!-- 29 -->
+    <section class="slide">
+      <p>Roma caiu. A Europa virou caos.</p>
+      <p style="margin-top: 12px;">Sem império. Sem polícia. Sem comércio.</p>
+      <p class="big" style="margin-top: 14px;">Nasceu uma estrutura nova: o <em>feudalismo</em>.</p>
+      <div class="illu sm" style="margin: 18px auto;">
+        <svg viewBox="0 0 160 80" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <path d="M50 70 L50 30 L70 15 L90 30 L110 30 L110 70 Z"/>
+          <rect x="60" y="50" width="12" height="20"/>
+          <path d="M85 70 L85 45 L100 45 L100 70"/>
+          <path d="M10 70 L150 70"/>
+        </svg>
+      </div>
+      <p>Camponês fazia acordo com o cara forte (senhor feudal). Trabalho em troca de proteção.</p>
+    </section>
+
+    <!-- 30 -->
+    <section class="slide">
+      <p>Virava <strong>servo</strong>.</p>
+      <p style="margin-top: 8px;">Não é escravo (não dá pra vender).</p>
+      <p>Mas é uma pessoa <strong>presa àquela terra</strong>.</p>
+      <p style="margin-top: 14px; color: var(--ink-soft); font-style: italic;">E em cima de tudo isso, a Igreja Católica.</p>
+    </section>
+
+    <!-- 31 — Igreja -->
+    <section class="slide">
+      <div class="eyebrow">Igreja Católica medieval</div>
+      <p>A instituição mais poderosa do continente.</p>
+      <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Conectava Portugal à Polônia.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Cobrava dízimo.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Tinha 1/3 da terra cultivável.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Tribunal próprio.</div>
+      </div>
+      <p style="margin-top: 14px; font-size: 14px; color: var(--ink-soft); font-style: italic;">Em 1077, um imperador alemão ficou 3 dias ajoelhado na neve pra ser perdoado pelo papa.</p>
+    </section>
+
+    <!-- 32 -->
+    <section class="slide">
+      <p class="big">Mas — atenção.</p>
+      <p style="margin-top: 14px;">A Igreja medieval foi também quem <strong>salvou o conhecimento antigo</strong>.</p>
+      <div class="illu sm" style="margin: 18px auto;">
+        <svg viewBox="0 0 140 70" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <rect x="30" y="20" width="80" height="40" rx="2"/>
+          <path d="M70 20 L70 60"/>
+          <path d="M40 30 L62 30 M40 38 L62 38 M40 46 L62 46 M40 54 L58 54"/>
+          <path d="M78 30 L100 30 M78 38 L100 38 M78 46 L100 46 M78 54 L96 54"/>
+        </svg>
+      </div>
+      <p>Monges em mosteiros gelados copiavam à mão livros de Platão, Aristóteles, Cícero.</p>
+      <p style="margin-top: 10px;">Você lê Platão hoje porque um monge sem nome copiou aquele livro <strong>há mil anos</strong>.</p>
+    </section>
+
+    <!-- 33 — universidades -->
+    <section class="slide">
+      <div class="eyebrow">As primeiras universidades — nasceram na Idade Média</div>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-year">1088</span><span class="tl-text">Bolonha</span></div>
+        <div class="tl-item"><span class="tl-year">1150</span><span class="tl-text">Paris</span></div>
+        <div class="tl-item"><span class="tl-year">1167</span><span class="tl-text">Oxford</span></div>
+        <div class="tl-item"><span class="tl-year">1290</span><span class="tl-text">Coimbra</span></div>
+      </div>
+      <p style="margin-top: 14px;">Todas existem <strong>até hoje</strong>.</p>
+    </section>
+
+    <!-- 34 — invenções -->
+    <section class="slide">
+      <p>E teve invenção pra caralho.</p>
+      <p style="margin-top: 10px; font-size: 14px; color: var(--ink-soft);">Roda d'água, arado pesado, ferradura, óculos (séc. XIII!), moinho de vento, relógio mecânico, catedrais góticas.</p>
+      <p class="big" style="margin-top: 16px;">Mas teve coisa horrível também.</p>
+      <p style="margin-top: 10px;">Inquisição. Cruzadas.</p>
+      <p>E a <strong>peste negra</strong> (1347-1351).</p>
+    </section>
+
+    <!-- 35 — peste -->
+    <section class="slide">
+      <div class="number" style="font-size: 64px;">⅓ a ½</div>
+      <p style="margin-top: 14px;">da população europeia. Morta em <strong>4 anos</strong>.</p>
+      <p style="margin-top: 8px;">30 a 50 milhões de pessoas. Cidades inteiras vazias.</p>
+      <p style="margin-top: 14px;">Paradoxalmente, a peste:</p>
+      <div style="margin-top: 8px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 14px; padding: 8px 12px; background: var(--paper); border-radius: 8px;">→ fragilizou o feudalismo</div>
+        <div style="font-size: 14px; padding: 8px 12px; background: var(--paper); border-radius: 8px;">→ abalou a fé na Igreja</div>
+        <div style="font-size: 14px; padding: 8px 12px; background: var(--paper); border-radius: 8px;">→ empurrou pro próximo capítulo</div>
+      </div>
+    </section>
+
+    <!-- 36 — PARTE 6 -->
+    <section class="slide part-cover">
+      <div class="number">06</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 6 · Aula 8</div>
+      <h2>O Ocidente <em>acorda</em>.</h2>
+      <p style="margin-top: 10px;">Renascimento. 200 anos. Florença.</p>
+    </section>
+
+    <!-- 37 -->
+    <section class="slide">
+      <p>Quatro mudanças centrais.</p>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">01 · Humanismo</div>
+          <p style="font-size: 14.5px;">O ser humano voltou ao centro. Florença + Médici + Leonardo, Michelangelo, Rafael.</p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">02 · Imprensa de Gutenberg (≈1450)</div>
+          <p style="font-size: 14.5px;">Mil cópias da mesma página em um dia. Conhecimento democratizou.</p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">03 · Ciência liberta da teologia</div>
+          <p style="font-size: 14.5px;">Copérnico, Galileu. <em>E pur si muove.</em></p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">04 · Europa olhou pra fora</div>
+          <p style="font-size: 14.5px;">Colombo (1492), Vasco da Gama (1498), Cabral (1500).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 38 — Gutenberg -->
+    <section class="slide">
+      <p class="big">Talvez a invenção mais importante dos últimos mil anos.</p>
+      <div class="illu" style="margin: 20px auto; max-width: 220px;">
+        <svg viewBox="0 0 220 120" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <rect x="40" y="30" width="140" height="60"/>
+          <rect x="50" y="40" width="60" height="40"/>
+          <path d="M60 50 L100 50 M60 58 L100 58 M60 66 L95 66 M60 74 L100 74"/>
+          <rect x="115" y="40" width="60" height="40"/>
+          <path d="M125 50 L165 50 M125 58 L165 58 M125 66 L160 66 M125 74 L165 74"/>
+          <path d="M30 30 L30 100 M190 30 L190 100"/>
+          <path d="M25 100 L195 100"/>
+        </svg>
+      </div>
+      <p>Antes: livro custava o preço de uma casa.</p>
+      <p>Depois: democratização do conhecimento.</p>
+      <p style="margin-top: 12px;">E uma vez que democratiza conhecimento, <strong>não controla mais o que as pessoas pensam</strong>.</p>
+    </section>
+
+    <!-- 39 — Galileu -->
+    <section class="slide">
+      <p>A Igreja condenou Galileu em <strong>1633</strong>.</p>
+      <p>Prisão domiciliar até a morte.</p>
+      <p class="quote" style="margin-top: 16px;">E pur si muove. <span style="font-size: 14px; color: var(--ink-soft);">— "E, no entanto, ela se move."</span></p>
+      <p style="margin-top: 14px;">A Igreja só pediu desculpas em <strong>1992</strong>.</p>
+      <p class="big" style="margin-top: 8px;">350 anos depois.</p>
+    </section>
+
+    <!-- 40 — PARTE 7 -->
+    <section class="slide part-cover">
+      <div class="number">07</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 7 · Aula 9</div>
+      <h2>A racha que mudou tudo.</h2>
+      <p style="margin-top: 10px;">Reforma Protestante.</p>
+    </section>
+
+    <!-- 41 -->
+    <section class="slide">
+      <p><strong>31 de outubro de 1517</strong>. Wittenberg.</p>
+      <p style="margin-top: 12px;">Um padre de 34 anos chamado <strong>Martinho Lutero</strong> pregou 95 críticas na porta de uma capela.</p>
+      <div class="illu sm" style="margin: 18px auto;">
+        <svg viewBox="0 0 140 80" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <rect x="30" y="15" width="80" height="60"/>
+          <path d="M30 25 L110 25"/>
+          <path d="M40 35 L100 35 M40 42 L100 42 M40 49 L100 49 M40 56 L100 56 M40 63 L100 63 M40 70 L90 70"/>
+          <circle cx="100" cy="20" r="2" fill="#B8862F"/>
+        </svg>
+      </div>
+      <p>Indignado com a venda de <strong>indulgências</strong>. A Igreja vendendo perdão por dinheiro.</p>
+    </section>
+
+    <!-- 42 -->
+    <section class="slide">
+      <p class="quote">Assim que a moeda no cofre soar, a alma do purgatório saltará.</p>
+      <p style="margin-top: 14px; font-size: 13px; color: var(--ink-soft);">— propaganda do pregador Tetzel</p>
+      <p style="margin-top: 18px;">Lutero queria debate acadêmico.</p>
+      <p>Alguém traduziu pro alemão, imprimiu (lembra Gutenberg?), e viralizou.</p>
+    </section>
+
+    <!-- 43 — a camada que falta -->
+    <section class="slide">
+      <div class="eyebrow">A camada que falta em quase toda explicação</div>
+      <p class="big">Lutero sobreviveu porque os príncipes alemães queriam ele vivo.</p>
+      <p style="margin-top: 14px;">Não por motivo religioso. Por <strong>motivo econômico</strong>.</p>
+      <p style="margin-top: 8px;">Tavam de saco cheio de mandar dinheiro pra Roma.</p>
+    </section>
+
+    <!-- 44 -->
+    <section class="slide">
+      <p class="quote">Quando alguém te disser que uma guerra é religiosa, ou que uma briga é por ideias, desconfia. Procura o dinheiro. Procura o poder.</p>
+      <p style="margin-top: 14px;">Quase sempre, tá lá.</p>
+    </section>
+
+    <!-- 45 — 3 ramos -->
+    <section class="slide">
+      <div class="eyebrow">Três ramos</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+        <div class="card-soft">
+          <div class="label">Luteranismo</div>
+          <p style="font-size: 14px;">Alemanha</p>
+        </div>
+        <div class="card-soft">
+          <div class="label">Calvinismo</div>
+          <p style="font-size: 14px;">Suíça, Holanda, Escócia, EUA. Predestinação. <em>Pavimentou o capitalismo.</em></p>
+        </div>
+        <div class="card-soft">
+          <div class="label">Anglicanismo</div>
+          <p style="font-size: 14px;">Inglaterra. Henrique VIII queria divorciar.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 46 — Brasil católico -->
+    <section class="slide">
+      <p>A Igreja Católica reagiu com a <strong>Contrarreforma</strong>.</p>
+      <p style="margin-top: 8px;">Concílio de Trento. Inquisição reforçada. Jesuítas.</p>
+      <p style="margin-top: 14px;">Jesuítas vieram pro Brasil em <strong>1549</strong>.</p>
+      <p class="big" style="margin-top: 12px;">O Brasil é católico hoje porque a Reforma aconteceu.</p>
+    </section>
+
+    <!-- 47 — Vestfália -->
+    <section class="slide">
+      <p>Mais de um século de guerras religiosas.</p>
+      <p style="margin-top: 12px;">Terminando na <strong>Paz de Vestfália (1648)</strong>.</p>
+      <p style="margin-top: 14px;">Inaugurou o princípio da <em>soberania nacional</em>: cada Estado é soberano dentro do seu território.</p>
+      <p class="big" style="margin-top: 14px;">A ordem internacional moderna é filha direta da Reforma.</p>
+    </section>
+
+    <!-- 48 — PARTE 8 -->
+    <section class="slide part-cover">
+      <div class="number">08</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 8 · Aula 10</div>
+      <h2>Iluminismo.</h2>
+      <p style="margin-top: 10px;">Quando a humanidade decidiu pensar por conta própria.</p>
+    </section>
+
+    <!-- 49 -->
+    <section class="slide">
+      <p class="quote">O Iluminismo é, literalmente, o sistema operacional do mundo em que você vive.</p>
+      <p style="margin-top: 14px;">Tudo que você considera natural hoje foi inventado, no papel, por filósofos europeus entre os séculos XVII e XVIII.</p>
+    </section>
+
+    <!-- 50 -->
+    <section class="slide">
+      <p>O gatilho foi <strong>Newton</strong>. 1687.</p>
+      <p>Explicou o universo com <strong>três equações</strong>.</p>
+      <div class="illu sm" style="margin: 18px auto;">
+        <svg viewBox="0 0 140 80" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <circle cx="70" cy="40" r="20"/>
+          <ellipse cx="70" cy="40" rx="50" ry="15" transform="rotate(-20 70 40)"/>
+          <circle cx="30" cy="50" r="3" fill="#B8862F"/>
+        </svg>
+      </div>
+      <p>Se Newton explicou a natureza com a razão…</p>
+      <p class="big" style="margin-top: 8px;">…por que não usar a razão pra explicar política, economia, moral?</p>
+    </section>
+
+    <!-- 51 — os personagens -->
+    <section class="slide">
+      <div class="eyebrow">Os personagens</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Locke</strong> — pai do liberalismo. Vida, liberdade, propriedade.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Montesquieu</strong> — separação dos três poderes.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Voltaire</strong> — tolerância, liberdade de expressão.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Rousseau</strong> — soberania popular.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Diderot</strong> — Enciclopédia. O Google do séc. XVIII.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Adam Smith</strong> — economia moderna. Mão invisível.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Kant</strong> — <em>Sapere aude.</em> Ouse saber.</div>
+      </div>
+    </section>
+
+    <!-- 52 — sombra -->
+    <section class="slide">
+      <p class="big">Mas tem sombra.</p>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 14px;">Eurocêntrico.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 14px;">Vários iluministas tinham investimento em escravidão.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 14px;">"Direitos do homem" era literal. Olympe de Gouges foi guilhotinada.</div>
+        <div style="padding: 10px 12px; background: var(--paper); border-radius: 8px; font-size: 14px;">A "missão civilizatória" virou justificativa pra colonialismo brutal.</div>
+      </div>
+      <p style="margin-top: 14px;">Tem mais luz que sombra. Mas tem sombra.</p>
+    </section>
+
+    <!-- 53 — PARTE 9 -->
+    <section class="slide part-cover">
+      <div class="number">09</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 9 · Aulas 11 e 12</div>
+      <h2>As duas revoluções.</h2>
+      <p style="margin-top: 10px;">Quando as ideias viraram fogo.</p>
+    </section>
+
+    <!-- 54 — Americana -->
+    <section class="slide">
+      <span class="stamp">Aula 12</span>
+      <h2 style="margin-top: 12px;">Revolução Americana.</h2>
+      <p style="font-size: 13px; color: var(--ink-soft);">1775-1783 · Constituição 1787</p>
+      <p style="margin-top: 14px;">13 colônias. Norte (protestante, comércio) vs Sul (plantation, escravidão).</p>
+      <p style="margin-top: 10px;">Mas com 150 anos de prática de <strong>autogoverno</strong>.</p>
+      <p style="margin-top: 12px; font-style: italic; color: var(--ink-soft);">Estourou por causa de imposto.</p>
+    </section>
+
+    <!-- 55 -->
+    <section class="slide">
+      <p class="quote">No taxation without representation.</p>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-year">1773</span><span class="tl-text">Boston Tea Party</span></div>
+        <div class="tl-item"><span class="tl-year">1774</span><span class="tl-text">Leis Intoleráveis</span></div>
+        <div class="tl-item"><span class="tl-year">1775</span><span class="tl-text">Lexington e Concord. Guerra.</span></div>
+        <div class="tl-item"><span class="tl-year">1776</span><span class="tl-text">Declaração de Independência (Jefferson)</span></div>
+      </div>
+    </section>
+
+    <!-- 56 -->
+    <section class="slide">
+      <p class="quote">Consideramos estas verdades como autoevidentes: que todos os homens são criados iguais, dotados de certos direitos inalienáveis — vida, liberdade e busca da felicidade.</p>
+      <p style="margin-top: 14px;">Isso é <strong>Locke virando ato fundador de país</strong>.</p>
+    </section>
+
+    <!-- 57 -->
+    <section class="slide">
+      <p>Mas o mais importante veio depois da guerra.</p>
+      <p style="margin-top: 12px;"><strong>Convenção da Filadélfia, 1787.</strong></p>
+      <p>55 delegados, 4 meses, em segredo.</p>
+      <p class="big" style="margin-top: 12px; color: var(--accent);">Constituição americana.</p>
+      <p style="margin-top: 8px;">A mais antiga ainda em vigor no mundo.</p>
+      <p style="margin-top: 14px;">Washington <strong>abriu mão do poder voluntariamente</strong> em 1797. Fundou a tradição de transição pacífica.</p>
+    </section>
+
+    <!-- 58 -->
+    <section class="slide">
+      <p style="color: var(--wrong); font-style: italic;">Defeito gigantesco:</p>
+      <p style="margin-top: 6px;">Manteve a escravidão.</p>
+      <p class="big" style="margin-top: 12px;">Cobrou fatura 80 anos depois.</p>
+      <p style="margin-top: 8px;">Guerra Civil. <strong>600 mil mortos.</strong></p>
+    </section>
+
+    <!-- 59 — Francesa -->
+    <section class="slide">
+      <span class="stamp">Aula 11</span>
+      <h2 style="margin-top: 12px;">Revolução Francesa.</h2>
+      <p style="font-size: 13px; color: var(--ink-soft);">1789-1799</p>
+      <p class="big" style="margin-top: 14px;">A explosão. O drama. O sangue.</p>
+    </section>
+
+    <!-- 60 — 3 estados -->
+    <section class="slide">
+      <p>França em 1789. 25 milhões. Três Estados.</p>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 12px; background: var(--paper); border-radius: 10px;">
+          <div class="label">Primeiro Estado · Clero</div>
+          <p style="font-size: 13px; margin-top: 4px;">150 mil. Não pagavam imposto. 10% da terra.</p>
+        </div>
+        <div style="padding: 12px; background: var(--paper); border-radius: 10px;">
+          <div class="label">Segundo Estado · Nobreza</div>
+          <p style="font-size: 13px; margin-top: 4px;">400 mil. Não pagavam imposto. 25% da terra.</p>
+        </div>
+        <div style="padding: 12px; background: var(--paper); border-radius: 10px; border-left: 3px solid var(--accent);">
+          <div class="label">Terceiro Estado · Todo o resto</div>
+          <p style="font-size: 13px; margin-top: 4px;"><strong>25 milhões.</strong> Pagavam toda a conta.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 61 — 4 fatores -->
+    <section class="slide">
+      <div class="eyebrow">4 fatores acumulando</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;"><strong>01</strong> · Crise financeira (financiaram a Revolução Americana)</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;"><strong>02</strong> · Crise de fome (pão a 90% do salário)</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;"><strong>03</strong> · Iluminismo circulando</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;"><strong>04</strong> · Rei fraco (Luís XVI)</div>
+      </div>
+      <p style="margin-top: 14px;">Faltava a faísca.</p>
+    </section>
+
+    <!-- 62 — Bastilha -->
+    <section class="slide">
+      <p class="big">14 de julho de 1789.</p>
+      <p style="margin-top: 8px;">Queda da Bastilha.</p>
+      <div class="illu sm" style="margin: 20px auto;">
+        <svg viewBox="0 0 140 100" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <rect x="30" y="30" width="80" height="60"/>
+          <rect x="40" y="20" width="15" height="15"/>
+          <rect x="85" y="20" width="15" height="15"/>
+          <path d="M30 90 L110 90"/>
+          <rect x="62" y="60" width="16" height="30"/>
+        </svg>
+      </div>
+      <p>Início simbólico da Revolução.</p>
+    </section>
+
+    <!-- 63 — 4 fases -->
+    <section class="slide">
+      <div class="eyebrow">Quatro fases</div>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-year">89-92</span><span class="tl-text">Monarquia constitucional</span></div>
+        <div class="tl-item"><span class="tl-year">92-95</span><span class="tl-text">Convenção e República. Luís XVI guilhotinado.</span></div>
+        <div class="tl-item"><span class="tl-year">93-94</span><span class="tl-text">O Terror. Robespierre. ~40 mil mortos em 12 meses.</span></div>
+        <div class="tl-item"><span class="tl-year">95-99</span><span class="tl-text">Diretório → golpe de Napoleão</span></div>
+      </div>
+    </section>
+
+    <!-- 64 — Napoleão -->
+    <section class="slide">
+      <p>Em 1799, Napoleão deu o golpe.</p>
+      <p>Em 1804, virou <strong>imperador</strong>.</p>
+      <p style="margin-top: 8px; color: var(--ink-soft); font-style: italic;">Logo a Revolução que tinha começado decapitando rei.</p>
+      <p style="margin-top: 14px;">Mas consolidou em lei as conquistas:</p>
+      <p class="big" style="margin-top: 8px;">Código Napoleônico.</p>
+      <p style="margin-top: 8px; font-size: 14px;">Igualdade jurídica. Fim dos privilégios de nascimento. Casamento civil. Espalhou pela Europa na ponta da espada.</p>
+    </section>
+
+    <!-- 65 — Comparação -->
+    <section class="slide">
+      <div class="eyebrow">Comparação que vale ouro</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+        <div style="padding: 12px; background: var(--paper); border-radius: 10px;">
+          <div class="label" style="color: var(--accent);">Americana</div>
+          <p style="font-size: 12.5px; margin-top: 6px;">Cirúrgica. 150 anos de prática. Constituição que dura 240 anos.</p>
+        </div>
+        <div style="padding: 12px; background: var(--paper); border-radius: 10px;">
+          <div class="label" style="color: var(--accent);">Francesa</div>
+          <p style="font-size: 12.5px; margin-top: 6px;">Explosão. Saída direto do absolutismo. Décadas de instabilidade.</p>
+        </div>
+      </div>
+      <p class="quote" style="margin-top: 16px; font-size: 18px;">Ideias importam. Mas instituições importam mais.</p>
+    </section>
+
+    <!-- 66 — Esquerda/Direita -->
+    <section class="slide">
+      <div class="eyebrow">O legado pra você, hoje</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Idade Contemporânea começa em 1789.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Você é cidadão, não súdito.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;"><strong>Esquerda e direita</strong> nasceram literalmente da posição dos deputados na Assembleia.</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Nacionalismo moderno. Liberdade, igualdade, fraternidade.</div>
+      </div>
+    </section>
+
+    <!-- 67 — PARTE 10 -->
+    <section class="slide part-cover">
+      <div class="number">10</div>
+      <div class="eyebrow" style="margin-top: 10px;">Parte 10 · Aula 13</div>
+      <h2>A revolução silenciosa.</h2>
+      <p style="margin-top: 10px;">Que mudou mais do que todas.</p>
+    </section>
+
+    <!-- 68 -->
+    <section class="slide">
+      <p>Enquanto a França guilhotinava rei…</p>
+      <p>…na Inglaterra calada, algo diferente acontecia.</p>
+      <p class="big" style="margin-top: 14px;">Sem barricada. Sem rei decapitado.</p>
+      <p style="margin-top: 10px;">Mas no longo prazo, mudou a vida das pessoas <strong>ainda mais</strong>.</p>
+    </section>
+
+    <!-- 69 — Gráfico renda -->
+    <section class="slide">
+      <p>Por <strong>2.000 anos</strong>, renda per capita mundial foi uma linha rastejando no chão.</p>
+      <div class="illu" style="margin: 18px auto; max-width: 260px;">
+        <svg viewBox="0 0 260 120" class="draw" fill="none" stroke="#B8862F" stroke-width="1.5">
+          <path d="M20 100 L20 20" stroke="#4A4640"/>
+          <path d="M20 100 L240 100" stroke="#4A4640"/>
+          <path d="M20 95 L180 92 L200 75 L220 35 L235 15"/>
+          <text x="170" y="110" font-family="Georgia" font-size="9" fill="#4A4640">1760</text>
+        </svg>
+      </div>
+      <p>Em 1760, na Inglaterra, ela começou a subir.</p>
+      <p class="big" style="margin-top: 8px;">Depois disparou vertical.</p>
+    </section>
+
+    <!-- 70 -->
+    <section class="slide">
+      <p class="quote">A Revolução Industrial é o evento mais importante da história humana depois da agricultura.</p>
+    </section>
+
+    <!-- 71 — Por que Inglaterra -->
+    <section class="slide">
+      <div class="eyebrow">Por que a Inglaterra?</div>
+      <p style="font-size: 14px; color: var(--ink-soft);">Combinação rara:</p>
+      <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;">Capital acumulado (comércio, colônias, tráfico negreiro)</div>
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;">Revolução agrícola prévia (mão de obra livre)</div>
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;">Carvão e ferro abundantes</div>
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;">Salários altos + energia barata = pressão pra mecanizar</div>
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;"><strong>Instituições sólidas</strong> (Revolução Gloriosa, 1688)</div>
+        <div style="padding: 8px 12px; background: var(--paper); border-radius: 8px; font-size: 13.5px;">Cultura científica + mercado consumidor</div>
+      </div>
+    </section>
+
+    <!-- 72 — 4 fases -->
+    <section class="slide">
+      <div class="eyebrow">Quatro fases</div>
+      <div class="timeline">
+        <div class="tl-item"><span class="tl-year">1ª<br>1760</span><span class="tl-text">Vapor, carvão, têxtil. Inglaterra.</span></div>
+        <div class="tl-item"><span class="tl-year">2ª<br>1870</span><span class="tl-text">Aço, eletricidade, petróleo. <strong>Alemanha e EUA assumem.</strong></span></div>
+        <div class="tl-item"><span class="tl-year">3ª<br>1950</span><span class="tl-text">Eletrônica, informática.</span></div>
+        <div class="tl-item"><span class="tl-year">4ª<br>2000</span><span class="tl-text">IA, biotecnologia. <strong>Você está dentro dela agora.</strong></span></div>
+      </div>
+      <p style="margin-top: 12px; font-size: 13px; color: var(--ink-soft); font-style: italic;">Liderar uma fase não garante liderar a próxima.</p>
+    </section>
+
+    <!-- 73 — Custo humano -->
+    <section class="slide">
+      <p class="big">Custo humano brutal no curto prazo.</p>
+      <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Jornadas de <strong>16 horas</strong></div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Crianças nas minas</div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Expectativa de vida em Manchester: <strong>17 a 19 anos</strong></div>
+        <div style="padding: 10px 14px; background: var(--paper); border-radius: 8px; font-size: 14px;">Movimento ludita quebrando máquinas</div>
+      </div>
+      <p style="margin-top: 14px;">Ganho gigantesco no longo prazo: expectativa de vida dobrou. Classe média nasceu.</p>
+    </section>
+
+    <!-- 74 — 2 classes, 2 ideologias -->
+    <section class="slide">
+      <p>E o mais importante pra entender o que vem:</p>
+      <p class="big" style="margin-top: 12px;">Duas novas classes. Duas novas ideologias.</p>
+      <div style="margin-top: 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">Burguesia industrial</div>
+          <p style="font-size: 14.5px;">→ Liberalismo econômico (Adam Smith, 1776)</p>
+        </div>
+        <div class="card-soft" style="border-left: 3px solid var(--accent);">
+          <div class="label">Proletariado</div>
+          <p style="font-size: 14.5px;">→ Socialismo e marxismo (Marx & Engels, 1848)</p>
+        </div>
+      </div>
+      <p style="margin-top: 14px;">Esse choque é o motor de praticamente todos os grandes conflitos dos séculos XIX e XX.</p>
+    </section>
+
+    <!-- 75 — OS FIOS -->
+    <section class="slide part-cover">
+      <div class="eyebrow">Os fios que costuram tudo</div>
+      <h2>Seis coisas pra <em>gravar</em>.</h2>
+    </section>
+
+    <!-- 76 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">01</span>
+        <div>
+          <p class="big" style="font-size: 22px;">As 4 engrenagens estão sempre girando.</p>
+          <p style="margin-top: 8px; font-size: 14px;">Poder, governo/Estado, dinheiro, trabalho. Em toda sociedade. Sempre.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 77 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">02</span>
+        <div>
+          <p class="big" style="font-size: 22px;">A fórmula do controle não morreu.</p>
+          <p style="margin-top: 8px; font-size: 14px;">Escrita, exército, religião institucionalizada hoje são mídia/algoritmo, polícia/justiça, ideologia.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 78 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">03</span>
+        <div>
+          <p class="big" style="font-size: 22px;">Todo sistema poderoso traz a semente da própria queda.</p>
+          <p style="margin-top: 8px; font-size: 14px;">Império, empresa, relacionamento. Extensão, desigualdade, corrupção, pressão.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 79 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">04</span>
+        <div>
+          <p class="big" style="font-size: 22px;">Quase nada é só bom ou só ruim.</p>
+          <p style="margin-top: 8px; font-size: 14px;">Agricultura, Idade Média, Iluminismo, Revolução Industrial. Sempre as duas coisas.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 80 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">05</span>
+        <div>
+          <p class="big" style="font-size: 22px;">Ideias importam. Instituições importam mais.</p>
+          <p style="margin-top: 8px; font-size: 14px;">A diferença entre Revolução Americana e Francesa.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 81 -->
+    <section class="slide">
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <span class="number" style="font-size: 56px;">06</span>
+        <div>
+          <p class="big" style="font-size: 22px;">Sempre tem dinheiro e poder por baixo.</p>
+          <p style="margin-top: 8px; font-size: 14px;">Reforma parecia briga teológica, era ouro alemão. Quando disserem que uma briga é "de princípio", desconfia.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 82 — QUIZ INTRO -->
+    <section class="slide quiz-intro">
+      <div class="quiz-icon">?</div>
+      <div class="eyebrow" style="text-align: center;">Hora do quiz</div>
+      <h2>Você fixou ou só <em>leu</em>?</h2>
+      <p style="margin-top: 14px;">25 perguntas. Sem dica.<br>Se errar, eu te explico na hora.</p>
+    </section>
+
+    <!-- ===================== QUIZ ===================== -->
+
+    <!-- Q1 -->
+    <section class="slide" data-quiz="1">
+      <div class="question-num">Pergunta 1 de 25</div>
+      <div class="question">Segundo a Aula 2, o que é poder, na essência?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Comprar coisas é consequência de ter poder econômico — não é a definição de poder em si.">
+          <span class="letter">A</span><span>A capacidade de comprar coisas</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Força física é uma forma muito limitada de poder. Não é a essência.">
+          <span class="letter">B</span><span>A força física superior</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>A capacidade de fazer alguém fazer alguma coisa</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Cargo é só o lugar onde o poder se manifesta — mas o poder existe além do cargo.">
+          <span class="letter">D</span><span>O cargo que alguém ocupa no governo</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Exato.</span>Poder é, na essência, <strong>fazer alguém fazer alguma coisa</strong>. Só isso. Pode ser por força, dinheiro, convencimento, medo — não importa o meio.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> Poder é a capacidade de fazer alguém fazer alguma coisa.</div>
+    </section>
+
+    <!-- Q2 -->
+    <section class="slide" data-quiz="2">
+      <div class="question-num">Pergunta 2 de 25</div>
+      <div class="question">Qual a diferença entre Estado e governo?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="São coisas diferentes. Estado é estrutura permanente; governo é temporário.">
+          <span class="letter">A</span><span>São a mesma coisa</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Estado é a estrutura que dura; governo é o time que administra agora</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Estado e governo existem em todos os níveis. Não é uma questão de federal/estadual.">
+          <span class="letter">C</span><span>Estado é federal, governo é estadual</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Estado e governo existem em qualquer regime. Não é sobre o tipo de regime.">
+          <span class="letter">D</span><span>Estado é democrático, governo é autoritário</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Mandou bem.</span>Estado é a <strong>empresa</strong> (estrutura permanente: leis, instituições). Governo é o <strong>gerente do mês</strong> (quem administra agora).</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Estado dura; governo passa.</div>
+    </section>
+
+    <!-- Q3 -->
+    <section class="slide" data-quiz="3">
+      <div class="question-num">Pergunta 3 de 25</div>
+      <div class="question">Por quantos % da nossa história vivemos como caçadores-coletores?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Muito mais que isso.">
+          <span class="letter">A</span><span>50%</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Está perto, mas ainda menos do que o número real.">
+          <span class="letter">B</span><span>70%</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>96%</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Não. Os últimos 12 mil anos a gente é agricultor.">
+          <span class="letter">D</span><span>100%</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span><strong>96%.</strong> A agricultura é uma fatia minúscula da nossa história. O Homo sapiens existe há 300 mil anos — agricultor há só 12 mil.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> 96% da nossa história fomos caçadores-coletores.</div>
+    </section>
+
+    <!-- Q4 -->
+    <section class="slide" data-quiz="4">
+      <div class="question-num">Pergunta 4 de 25</div>
+      <div class="question">A Revolução Agrícola aconteceu há aproximadamente:</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Muito mais antiga que isso.">
+          <span class="letter">A</span><span>2.000 anos</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Ainda mais antiga.">
+          <span class="letter">B</span><span>5.000 anos</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>12.000 anos</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Não. A agricultura tem 12 mil anos, não 50 mil.">
+          <span class="letter">D</span><span>50.000 anos</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span><strong>12 mil anos atrás</strong>, no Crescente Fértil (Turquia, Iraque, Síria), alguém percebeu que jogar semente fazia planta nascer.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> 12 mil anos.</div>
+    </section>
+
+    <!-- Q5 -->
+    <section class="slide" data-quiz="5">
+      <div class="question-num">Pergunta 5 de 25</div>
+      <div class="question">Pra que NASCEU a escrita, segundo a Aula 4?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Veio muito depois. No começo, escrita era ferramenta de controle.">
+          <span class="letter">A</span><span>Poesia e literatura</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Contabilidade e controle</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Registrar lei sagrada veio depois. Primeiro, planilha de imposto.">
+          <span class="letter">C</span><span>Registrar leis sagradas</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Carta de amor? Muito longe disso. Escrita nasceu pra controlar.">
+          <span class="letter">D</span><span>Cartas de amor</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Boa.</span>Anotar trigo, impostos, soldados. <strong>Toda tecnologia poderosa nasce como ferramenta de controle</strong> e só depois vira ferramenta de libertação.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Contabilidade. Controle.</div>
+    </section>
+
+    <!-- Q6 -->
+    <section class="slide" data-quiz="6">
+      <div class="question-num">Pergunta 6 de 25</div>
+      <div class="question">Qual a fórmula que transformou vilarejos em impérios?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Importante, mas não é a fórmula do controle.">
+          <span class="letter">A</span><span>Agricultura, comércio e arte</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Escrita, exército e religião institucionalizada</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Isso é o legado grego — não a fórmula original do controle imperial.">
+          <span class="letter">C</span><span>Democracia, filosofia e ciência</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Metais não viraram impérios. Estrutura social, sim.">
+          <span class="letter">D</span><span>Ouro, prata e bronze</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Exato.</span>Escrita (informação) + Exército (força) + Religião institucionalizada (mentes). <strong>5 mil anos rodando.</strong> Hoje virou mídia, polícia/justiça, ideologia.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> A fórmula clássica do controle.</div>
+    </section>
+
+    <!-- Q7 -->
+    <section class="slide" data-quiz="7">
+      <div class="question-num">Pergunta 7 de 25</div>
+      <div class="question">Em qual cidade grega nasceu a democracia?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Esparta era militarista, oligárquica. O oposto de democracia.">
+          <span class="letter">A</span><span>Esparta</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Tebas teve momentos de relevância, mas não foi o berço da democracia.">
+          <span class="letter">B</span><span>Tebas</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Atenas</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Corinto era comercial, não democrática.">
+          <span class="letter">D</span><span>Corinto</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span><strong>Atenas, século V a.C.</strong> Restrita (só homens livres votavam), mas a ideia ficou e ressuscitou 2.500 anos depois.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> Atenas.</div>
+    </section>
+
+    <!-- Q8 -->
+    <section class="slide" data-quiz="8">
+      <div class="question-num">Pergunta 8 de 25</div>
+      <div class="question">O que significa "demokratía"?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Governo dos sábios seria mais perto de aristocracia ou tecnocracia.">
+          <span class="letter">A</span><span>Governo dos sábios</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Poder do povo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Igualdade é consequência, não a tradução literal.">
+          <span class="letter">C</span><span>Igualdade entre todos</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Isso seria plutocracia. O oposto.">
+          <span class="letter">D</span><span>Governo dos ricos</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Mandou bem.</span><em>Demos</em> = povo. <em>Kratos</em> = poder. <strong>Poder do povo.</strong></div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Demos + kratos = poder do povo.</div>
+    </section>
+
+    <!-- Q9 -->
+    <section class="slide" data-quiz="9">
+      <div class="question-num">Pergunta 9 de 25</div>
+      <div class="question">Em que ano caiu o Império Romano do Ocidente, oficialmente?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="27 a.C. é quando o Império foi fundado (Augusto), não quando caiu.">
+          <span class="letter">A</span><span>27 a.C.</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="313 é o Edito de Milão (cristianismo liberado), não a queda.">
+          <span class="letter">B</span><span>313 d.C.</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>476 d.C.</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="1453 é a queda de Constantinopla (Império do Oriente), não do Ocidente.">
+          <span class="letter">D</span><span>1453 d.C.</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span><strong>476 d.C.</strong>, com a deposição de Rômulo Augusto pelos hérulos. Mas a bomba já tava montada por dentro há séculos.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> 476 d.C.</div>
+    </section>
+
+    <!-- Q10 -->
+    <section class="slide" data-quiz="10">
+      <div class="question-num">Pergunta 10 de 25</div>
+      <div class="question">Quais são os 4 motivos pelos quais os impérios caem?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Isso é o Apocalipse, não a análise histórica da Aula 6.">
+          <span class="letter">A</span><span>Guerra, fome, peste e morte</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Genérico demais. A aula é específica.">
+          <span class="letter">B</span><span>Falta de fé, cultura, tecnologia e dinheiro</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Excesso de extensão, desigualdade interna, corrupção das elites, pressão externa</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Tem elementos verdadeiros, mas não é a lista da aula.">
+          <span class="letter">D</span><span>Mudança climática, doença, invasão, traição</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span>Os impérios <strong>se suicidam</strong>. A pressão externa só assina a certidão de óbito. A bomba já tava montada por dentro.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong></div>
+    </section>
+
+    <!-- Q11 -->
+    <section class="slide" data-quiz="11">
+      <div class="question-num">Pergunta 11 de 25</div>
+      <div class="question">O que era um "servo" no feudalismo?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Não. Servo não podia ser vendido — não era escravo.">
+          <span class="letter">A</span><span>Um escravo que podia ser comprado e vendido</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Uma pessoa livre presa à terra, com obrigações para o senhor feudal</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Não. Soldados eram cavaleiros, vassalos — não servos.">
+          <span class="letter">C</span><span>Um soldado profissional do senhor feudal</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Não. Administradores eram outra categoria.">
+          <span class="letter">D</span><span>Um administrador do feudo</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Mandou bem.</span>Servo não era escravo (não podia ser vendido), mas <strong>estava preso àquela terra</strong>. Trabalho em troca de proteção.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong></div>
+    </section>
+
+    <!-- Q12 -->
+    <section class="slide" data-quiz="12">
+      <div class="question-num">Pergunta 12 de 25</div>
+      <div class="question">Quem inventou a prensa de tipos móveis e quando?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Leonardo era gênio múltiplo, mas a prensa não foi dele.">
+          <span class="letter">A</span><span>Leonardo da Vinci, em 1500</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Johannes Gutenberg, em 1450</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Galileu foi astrônomo, não inventor de prensa.">
+          <span class="letter">C</span><span>Galileu Galilei, em 1600</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Lutero USOU a prensa pra viralizar as 95 teses — mas não inventou.">
+          <span class="letter">D</span><span>Martinho Lutero, em 1517</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span><strong>Gutenberg, ≈1450.</strong> Talvez a invenção mais importante dos últimos mil anos. Democratizou o conhecimento.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Gutenberg, 1450.</div>
+    </section>
+
+    <!-- Q13 -->
+    <section class="slide" data-quiz="13">
+      <div class="question-num">Pergunta 13 de 25</div>
+      <div class="question">Quem foi o principal mecenas do Renascimento em Florença?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Os papas patrocinaram muito em Roma, mas Florença era território Médici.">
+          <span class="letter">A</span><span>Os papas em Roma</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>A família Médici</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Carlos V era do Sacro Império, não mecenas florentino.">
+          <span class="letter">C</span><span>O imperador Carlos V</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Os reis franceses entraram depois, mas Florença é Médici.">
+          <span class="letter">D</span><span>Os reis da França</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span>Os <strong>Médici</strong> — banqueiros — financiaram Brunelleschi, Donatello, Botticelli, Leonardo, Michelangelo. Pela primeira vez em mil anos, artista podia viver de arte.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Família Médici.</div>
+    </section>
+
+    <!-- Q14 -->
+    <section class="slide" data-quiz="14">
+      <div class="question-num">Pergunta 14 de 25</div>
+      <div class="question">O que Lutero criticou principalmente nas 95 teses (1517)?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Celibato veio nas discussões depois, mas não era o ponto central das 95 teses.">
+          <span class="letter">A</span><span>O celibato dos padres</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>A venda de indulgências (perdão por dinheiro)</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Lutero queria a Bíblia em alemão. A tradução pro latim era anterior.">
+          <span class="letter">C</span><span>A tradução da Bíblia para o latim</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Lutero questionou a autoridade do papa, mas o estopim foi indulgência.">
+          <span class="letter">D</span><span>A existência do papa</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Exato.</span>"Assim que a moeda no cofre soar, a alma do purgatório saltará." A Igreja vendendo perdão pra financiar São Pedro. <strong>Indulgências.</strong></div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Venda de indulgências.</div>
+    </section>
+
+    <!-- Q15 -->
+    <section class="slide" data-quiz="15">
+      <div class="question-num">Pergunta 15 de 25</div>
+      <div class="question">Por que os príncipes alemães apoiaram Lutero?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Convicção até pode ter existido, mas o motor real foi econômico/político.">
+          <span class="letter">A</span><span>Por profunda convicção religiosa</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Por motivos econômicos e políticos — parar de mandar dinheiro a Roma e ganhar autonomia</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Lutero era filho de minerador, não da nobreza.">
+          <span class="letter">C</span><span>Porque Lutero era da família real</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Pelo contrário — o imperador (Carlos V) era contra Lutero.">
+          <span class="letter">D</span><span>Porque o imperador mandou apoiar</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span>"<strong>Procura o dinheiro. Procura o poder.</strong>" Aderir a Lutero significava parar de pagar Roma e confiscar terras da Igreja. Religião, política e dinheiro andam juntos.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong></div>
+    </section>
+
+    <!-- Q16 -->
+    <section class="slide" data-quiz="16">
+      <div class="question-num">Pergunta 16 de 25</div>
+      <div class="question">Segundo Max Weber, qual versão do protestantismo está ligada ao capitalismo moderno?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Lutero foi o estopim, mas não a doutrina que Weber liga ao capitalismo.">
+          <span class="letter">A</span><span>Luteranismo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Anglicanismo nasceu por motivo bem específico (Henrique VIII e divórcio).">
+          <span class="letter">B</span><span>Anglicanismo</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Calvinismo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Ortodoxia é do Oriente, não entra na Reforma Protestante.">
+          <span class="letter">D</span><span>Ortodoxia</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span>Calvino e a doutrina da <strong>predestinação</strong>. Trabalho duro + prosperidade como sinal de salvação = pavimento do capitalismo, segundo Weber.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> Calvinismo.</div>
+    </section>
+
+    <!-- Q17 -->
+    <section class="slide" data-quiz="17">
+      <div class="question-num">Pergunta 17 de 25</div>
+      <div class="question">Quem é o "pai do liberalismo", quase copiado na Declaração de Independência dos EUA?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Voltaire era de tolerância e liberdade de expressão. Outro foco.">
+          <span class="letter">A</span><span>Voltaire</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Rousseau inspirou a Revolução Francesa radical, não Jefferson.">
+          <span class="letter">B</span><span>Rousseau</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>John Locke</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Montesquieu deu os três poderes — mas o pai do liberalismo é Locke.">
+          <span class="letter">D</span><span>Montesquieu</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Mandou bem.</span><strong>Locke.</strong> Direitos naturais: vida, liberdade, propriedade. Jefferson basicamente copiou na Declaração de 1776.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> John Locke.</div>
+    </section>
+
+    <!-- Q18 -->
+    <section class="slide" data-quiz="18">
+      <div class="question-num">Pergunta 18 de 25</div>
+      <div class="question">Qual filósofo propôs a separação dos três poderes?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Locke foi liberalismo e direitos naturais.">
+          <span class="letter">A</span><span>Locke</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Rousseau foi soberania popular, vontade geral.">
+          <span class="letter">B</span><span>Rousseau</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Montesquieu</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Kant é o do 'Sapere aude', não dos três poderes.">
+          <span class="letter">D</span><span>Kant</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span><strong>Montesquieu.</strong> "Todo poder tende a abusar." Solução: fragmentar e fazer um vigiar o outro. Executivo, Legislativo, Judiciário.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong> Montesquieu.</div>
+    </section>
+
+    <!-- Q19 -->
+    <section class="slide" data-quiz="19">
+      <div class="question-num">Pergunta 19 de 25</div>
+      <div class="question">O que significa o lema kantiano "Sapere aude"?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="É o oposto. Kant queria que você saísse da menoridade autoimposta.">
+          <span class="letter">A</span><span>"Saiba o seu lugar"</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>"Ouse saber" / "Tenha coragem de usar seu próprio entendimento"</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Kant é mais profundo: é sobre coragem pra pensar sozinho.">
+          <span class="letter">C</span><span>"Acredite na ciência"</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Razão divina é teologia. Kant pregava razão autônoma.">
+          <span class="letter">D</span><span>"Obedeça à razão divina"</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Exato.</span>"<strong>Ouse saber.</strong>" Tenha coragem de usar seu próprio entendimento. O lema do Iluminismo inteiro.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> Ouse saber.</div>
+    </section>
+
+    <!-- Q20 -->
+    <section class="slide" data-quiz="20">
+      <div class="question-num">Pergunta 20 de 25</div>
+      <div class="question">Em que data caiu a Bastilha?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Essa é a Declaração de Independência dos EUA.">
+          <span class="letter">A</span><span>4 de julho de 1776</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>14 de julho de 1789</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Essa é a guilhotinada de Luís XVI.">
+          <span class="letter">C</span><span>21 de janeiro de 1793</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Essa é o golpe de Napoleão (18 Brumário).">
+          <span class="letter">D</span><span>9 de novembro de 1799</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span><strong>14 de julho de 1789.</strong> Início simbólico da Revolução Francesa. Feriado nacional francês até hoje.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong> 14 de julho de 1789.</div>
+    </section>
+
+    <!-- Q21 -->
+    <section class="slide" data-quiz="21">
+      <div class="question-num">Pergunta 21 de 25</div>
+      <div class="question">O que era o "Terceiro Estado" na França pré-revolucionária?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Nobreza era o Segundo Estado, não o Terceiro.">
+          <span class="letter">A</span><span>Os nobres do interior</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Clero era o Primeiro Estado.">
+          <span class="letter">B</span><span>O clero rural</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Todo o resto — burgueses, camponeses, artesãos, profissionais liberais</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Funcionários do rei estavam espalhados em vários estamentos.">
+          <span class="letter">D</span><span>Os funcionários do rei</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Mandou bem.</span><strong>25 milhões de pessoas</strong> pagando toda a conta enquanto clero (1º) e nobreza (2º) não pagavam imposto. Daí a explosão.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong></div>
+    </section>
+
+    <!-- Q22 -->
+    <section class="slide" data-quiz="22">
+      <div class="question-num">Pergunta 22 de 25</div>
+      <div class="question">"Esquerda" e "direita" na política nasceram onde?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="A Revolução Russa veio MUITO depois. Os termos já existiam.">
+          <span class="letter">A</span><span>Na Revolução Russa</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="A Revolução Americana não cunhou esses termos.">
+          <span class="letter">B</span><span>Na Revolução Americana</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Na Assembleia da Revolução Francesa, pela posição dos deputados</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Voltaire é Iluminismo, mas os termos vieram literalmente da Assembleia.">
+          <span class="letter">D</span><span>No Iluminismo, com Voltaire</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Isso.</span><strong>Literalmente físico.</strong> Quem queria mudança radical sentava à esquerda do presidente da Assembleia. Quem queria manter, à direita.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong></div>
+    </section>
+
+    <!-- Q23 -->
+    <section class="slide" data-quiz="23">
+      <div class="question-num">Pergunta 23 de 25</div>
+      <div class="question">A Constituição americana de 1787 é importante porque:</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Não foi a primeira (Inglaterra tinha tradição constitucional, Córsega teve uma anterior). Mas é a mais antiga AINDA em vigor.">
+          <span class="letter">A</span><span>Foi a primeira Constituição do mundo</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>É a Constituição escrita mais antiga ainda em vigor no mundo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Pelo contrário — manteve a escravidão e cobrou fatura 80 anos depois na Guerra Civil.">
+          <span class="letter">C</span><span>Aboliu a escravidão imediatamente</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Jefferson escreveu a Declaração de Independência sozinho. A Constituição foi obra coletiva de 55 delegados.">
+          <span class="letter">D</span><span>Foi escrita por Thomas Jefferson sozinho</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Certo.</span>Mais antiga <strong>ainda em vigor</strong>. 240 anos de instituições rodando. Lembra: "Ideias importam. Instituições importam mais."</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong></div>
+    </section>
+
+    <!-- Q24 -->
+    <section class="slide" data-quiz="24">
+      <div class="question-num">Pergunta 24 de 25</div>
+      <div class="question">Por que a Revolução Industrial começou na Inglaterra?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Determinismo cultural ingênuo. A história nunca é "porque alguém é mais inteligente".">
+          <span class="letter">A</span><span>Porque os ingleses eram mais inteligentes</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Carvão ajudou, mas sozinho não explica. China tinha carvão e não houve revolução industrial lá no séc XVIII.">
+          <span class="letter">B</span><span>Porque tinham mais carvão que todo mundo</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">C</span><span>Combinação rara: capital, mão de obra liberada do campo, energia barata, salários altos, instituições sólidas, ciência aplicada e mercado consumidor</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="A história não funciona por decreto real. Foi processo estrutural.">
+          <span class="letter">D</span><span>Porque o rei mandou</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Boa.</span>Não foi um fator só — foi <strong>combinação rara</strong> de condições. Tira qualquer uma dessas e provavelmente não acontece. As instituições da Revolução Gloriosa de 1688 foram cruciais.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a C.</strong></div>
+    </section>
+
+    <!-- Q25 -->
+    <section class="slide" data-quiz="25">
+      <div class="question-num">Pergunta 25 de 25</div>
+      <div class="question">Quais 2 classes e 2 ideologias nasceram da Revolução Industrial?</div>
+      <div class="options">
+        <button class="option" data-correct="false" data-explain="Nobreza e clero são do Antigo Regime, anteriores. Já estavam em decadência.">
+          <span class="letter">A</span><span>Nobreza e clero / monarquismo e republicanismo</span>
+        </button>
+        <button class="option" data-correct="true">
+          <span class="letter">B</span><span>Burguesia industrial e proletariado / liberalismo econômico e socialismo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Essas são do mundo medieval, anteriores à Revolução Industrial.">
+          <span class="letter">C</span><span>Camponeses e artesãos / feudalismo e mercantilismo</span>
+        </button>
+        <button class="option" data-correct="false" data-explain="Patrícios e plebeus são da Roma antiga.">
+          <span class="letter">D</span><span>Patrícios e plebeus / democracia e oligarquia</span>
+        </button>
+      </div>
+      <div class="feedback right" data-fb="right"><span class="head">Fechou.</span><strong>Burguesia industrial</strong> (donos das fábricas) → liberalismo (Adam Smith, 1776). <strong>Proletariado</strong> (operários) → socialismo/marxismo (Marx, 1848). Esse choque é o motor dos sécs. XIX e XX.</div>
+      <div class="feedback miss" data-fb="miss"><span class="head">Quase.</span><span data-explain-text></span><br><br><strong>A certa é a B.</strong></div>
+    </section>
+
+    <!-- END -->
+    <section class="slide end">
+      <div class="eyebrow" style="color: var(--accent-soft);">Você concluiu</div>
+      <h2>Bloco 1 fechado.</h2>
+      <div class="score" id="finalScore">0/25</div>
+      <p id="finalMsg">Carregando...</p>
+      <p style="margin-top: 18px; font-size: 14px;">Próxima: <strong style="color: var(--accent-soft);">Aula 14</strong> — Era das ideologias. Liberalismo, socialismo, marxismo, nacionalismo.</p>
+      <button class="restart" id="restartBtn">Voltar ao início</button>
+    </section>
+
+  </div>
+
+  <div class="tap-zone left" id="tapLeft"></div>
+  <div class="tap-zone right" id="tapRight"></div>
+</div>
+
+<script>
+(function(){
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const progress = document.getElementById('progress');
+  const counter = document.getElementById('counter');
+  let current = 0;
+  let score = 0;
+  let answered = new Set();
+
+  // build progress segments
+  for (let i = 0; i < total; i++) {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    seg.dataset.idx = i;
+    progress.appendChild(seg);
+  }
+  const segs = document.querySelectorAll('.seg');
+
+  function update() {
+    slides.forEach((s, i) => {
+      s.classList.remove('active', 'prev');
+      if (i === current) s.classList.add('active');
+      else if (i < current) s.classList.add('prev');
+    });
+    segs.forEach((seg, i) => {
+      seg.classList.remove('done', 'current');
+      if (i < current) seg.classList.add('done');
+      else if (i === current) seg.classList.add('current');
+    });
+    counter.textContent = (current + 1) + ' / ' + total;
+
+    // Final slide
+    if (slides[current].classList.contains('end')) {
+      document.getElementById('finalScore').textContent = score + '/25';
+      const msg = document.getElementById('finalMsg');
+      if (score >= 23) msg.innerHTML = 'Você fixou de verdade.<br>Pode seguir com a base firme.';
+      else if (score >= 18) msg.innerHTML = 'Sólido. Mas relê as aulas onde errou.<br>Não é vergonha — é construção.';
+      else msg.innerHTML = 'Volta nas aulas. Sem pressa.<br>O curso é cumulativo. Furo aqui vira cobrança lá na frente.';
+    }
+  }
+
+  function go(idx) {
+    if (idx < 0 || idx >= total) return;
+    current = idx;
+    update();
+  }
+  function next() { if (current < total - 1) go(current + 1); }
+  function prev() { if (current > 0) go(current - 1); }
+
+  document.getElementById('tapLeft').addEventListener('click', prev);
+  document.getElementById('tapRight').addEventListener('click', next);
+
+  // Swipe
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, {passive: true});
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) next(); else prev();
+    }
+  }, {passive: true});
+
+  // Progress click & drag
+  progress.addEventListener('click', e => {
+    const seg = e.target.closest('.seg');
+    if (seg) go(parseInt(seg.dataset.idx));
+  });
+  let dragging = false;
+  progress.addEventListener('touchstart', () => { dragging = true; }, {passive: true});
+  progress.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const x = e.touches[0].clientX;
+    const rect = progress.getBoundingClientRect();
+    const pct = (x - rect.left) / rect.width;
+    const idx = Math.max(0, Math.min(total - 1, Math.floor(pct * total)));
+    if (idx !== current) go(idx);
+  }, {passive: true});
+  progress.addEventListener('touchend', () => { dragging = false; }, {passive: true});
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft') prev();
+  });
+
+  // Quiz logic
+  document.querySelectorAll('.option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      const slide = opt.closest('.slide');
+      const quizId = slide.dataset.quiz;
+      if (answered.has(quizId)) return;
+      answered.add(quizId);
+
+      const correct = opt.dataset.correct === 'true';
+      const allOpts = slide.querySelectorAll('.option');
+      allOpts.forEach(o => {
+        o.classList.add('disabled');
+        if (o.dataset.correct === 'true') o.classList.add('correct');
+      });
+      if (!correct) opt.classList.add('wrong');
+
+      if (correct) {
+        score++;
+        slide.querySelector('[data-fb="right"]').classList.add('show');
+      } else {
+        const missFb = slide.querySelector('[data-fb="miss"]');
+        const explainSpan = missFb.querySelector('[data-explain-text]');
+        if (explainSpan) explainSpan.textContent = opt.dataset.explain || '';
+        missFb.classList.add('show');
+      }
+    });
+  });
+
+  // Restart
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    score = 0;
+    answered.clear();
+    document.querySelectorAll('.option').forEach(o => {
+      o.classList.remove('correct', 'wrong', 'disabled');
+    });
+    document.querySelectorAll('.feedback').forEach(f => f.classList.remove('show'));
+    go(0);
+  });
+
+  update();
+})();
+</script>
+
+</body>
+</html>
